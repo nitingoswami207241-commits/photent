@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pro AI Photo Editor</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  background: #111;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+}
+
+.toolbar {
+  background: #1c1c1c;
+  padding: 10px;
+}
+
+button, input {
+  margin: 5px;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button {
+  background: #00aaff;
+  color: white;
+}
+
+canvas {
+  border: 2px solid #333;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="toolbar">
+<h2>🔥 PRO AI PHOTO EDITOR</h2>
+
+<input type="file" id="upload">
+
+<br>
+
+<button onclick="beauty()">✨ Beauty</button>
+<button onclick="enhance()">⚡ Enhance</button>
+<button onclick="filter()">🎨 Filter</button>
+<button onclick="brightness()">🌞 Brightness</button>
+<button onclick="color()">🌈 Color</button>
+
+<button onclick="eraser()">🧽 AI Eraser</button>
+<button onclick="effects()">🎭 Effects</button>
+
+<button onclick="addEmoji()">😊 Emoji</button>
+
+<button onclick="undo()">↩ Undo</button>
+<button onclick="redo()">↪ Redo</button>
+
+<button onclick="reset()">🔄 Reset</button>
+<button onclick="download()">⬇ Download</button>
+
+</div>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = new fabric.Canvas('c');
+canvas.setWidth(900);
+canvas.setHeight(500);
+
+let imgObj;
+let state = [];
+let mods = 0;
+
+// save state
+function saveState(){
+  state.push(JSON.stringify(canvas));
+  mods++;
+}
+
+// upload
+document.getElementById('upload').onchange = function(e){
+  const reader = new FileReader();
+
+  reader.onload = function(event){
+    fabric.Image.fromURL(event.target.result, function(img){
+
+      canvas.clear();
+      img.scaleToWidth(500);
+
+      canvas.add(img);
+      canvas.centerObject(img);
+
+      imgObj = img;
+      saveState();
+    });
+  };
+
+  reader.readAsDataURL(e.target.files[0]);
+};
+
+// ✨ BEAUTY MODE
+function beauty(){
+  if(!imgObj) return;
+
+  imgObj.filters.push(
+    new fabric.Image.filters.Blur({blur: 0.2}),
+    new fabric.Image.filters.Brightness({brightness: 0.1})
+  );
+
+  imgObj.applyFilters();
+  canvas.renderAll();
+  saveState();
+}
+
+// ⚡ ENHANCE MODE
+function enhance(){
+  if(!imgObj) return;
+
+  imgObj.filters.push(
+    new fabric.Image.filters.Contrast({contrast: 0.4}),
+    new fabric.Image.filters.Saturation({saturation: 0.3})
+  );
+
+  imgObj.applyFilters();
+  canvas.renderAll();
+  saveState();
+}
+
+// 🎨 FILTER
+function filter(){
+  if(!imgObj) return;
+
+  imgObj.filters.push(
+    new fabric.Image.filters.Sepia()
+  );
+
+  imgObj.applyFilters();
+  canvas.renderAll();
+  saveState();
+}
+
+// 🌞 BRIGHTNESS
+function brightness(){
+  if(!imgObj) return;
+
+  imgObj.filters.push(
+    new fabric.Image.filters.Brightness({brightness: 0.3})
+  );
+
+  imgObj.applyFilters();
+  canvas.renderAll();
+  saveState();
+}
+
+// 🌈 COLOR
+function color(){
+  if(!imgObj) return;
+
+  imgObj.filters.push(
+    new fabric.Image.filters.Saturation({saturation: 0.5})
+  );
+
+  imgObj.applyFilters();
+  canvas.renderAll();
+  saveState();
+}
+
+// 🧽 ERASER TOOL
+function eraser(){
+  canvas.isDrawingMode = true;
+  canvas.freeDrawingBrush.width = 20;
+  canvas.freeDrawingBrush.color = "#111";
+}
+
+// 🎭 EFFECTS
+function effects(){
+  if(!imgObj) return;
+
+  imgObj.filters.push(
+    new fabric.Image.filters.Blur({blur: 0.5}),
+    new fabric.Image.filters.Contrast({contrast: 0.2})
+  );
+
+  imgObj.applyFilters();
+  canvas.renderAll();
+  saveState();
+}
+
+// 😊 EMOJI
+function addEmoji(){
+  const emoji = new fabric.Text("😊", {
+    left: 200,
+    top: 200,
+    fontSize: 50
+  });
+
+  canvas.add(emoji);
+  saveState();
+}
+
+// ↩ UNDO
+function undo(){
+  if(mods > 0){
+    mods--;
+    canvas.loadFromJSON(state[mods-1], canvas.renderAll.bind(canvas));
+  }
+}
+
+// ↪ REDO
+function redo(){
+  if(mods < state.length){
+    canvas.loadFromJSON(state[mods], canvas.renderAll.bind(canvas));
+    mods++;
+  }
+}
+
+// 🔄 RESET
+function reset(){
+  location.reload();
+}
+
+// ⬇ DOWNLOAD
+function download(){
+  const link = document.createElement("a");
+  link.download = "pro_ai_edit.png";
+  link.href = canvas.toDataURL({format:"png", quality:1});
+  link.click();
+}
+</script>
+
+</body>
+</html>
