@@ -1,2 +1,2 @@
 # photent
-photent is a esaly photo editor app for kids
+photent is a easy photo editor app for kids
